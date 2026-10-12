@@ -1,0 +1,6 @@
+# Placeholder so maps/ exists for the install rule.
+#
+# Serialized SLAM pose-graph artifacts (e.g. phase2_demo.posegraph + phase2_demo.data) are
+# OPERATOR-GENERATED, not committed: bring up in mapping mode, drive the environment, then call
+# /slam_toolbox/serialize_map. Drop the resulting <name>.posegraph/.data pair here and launch with
+# slam_mode:=localization map_file:=<name>.

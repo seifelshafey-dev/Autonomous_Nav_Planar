@@ -1,0 +1,19 @@
+# ros_gz_bridge (parameter_bridge) config for the Fortress sim.
+# Bridges the gpu_lidar scan and the sim clock from Gazebo (ign) into ROS 2.
+# Fortress type names (ignition.msgs.*). GZ_TO_ROS: sim is the source of truth.
+# /ground_truth/odom: true pose of the robot model in the world frame, for diagnosis only; no node of the stack may subscribe to it.
+- ros_topic_name: "/scan"
+  gz_topic_name: "/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "ignition.msgs.LaserScan"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "ignition.msgs.Clock"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/ground_truth/odom"
+  gz_topic_name: "/ground_truth/odom"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "ignition.msgs.Odometry"
+  direction: GZ_TO_ROS

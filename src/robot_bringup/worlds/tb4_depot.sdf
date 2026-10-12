@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!-- Source: https://github.com/turtlebot/turtlebot4_simulator/blob/humble/turtlebot4_ignition_bringup/worlds/depot.sdf (branch humble)
+     Upstream licence: Apache-2.0 (see THIRD_PARTY_LICENSE.turtlebot4)
+     modified: added world-level Sensors plugin (render_engine ogre2) -->
+<sdf version="1.6">
+  <world name="depot">
+    <scene>
+      <grid>false</grid>
+    </scene>
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.003</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics"></plugin>
+    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"></plugin>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"></plugin>
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Depot
+      </uri>
+    </include>
+
+  </world>
+</sdf>
