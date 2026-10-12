@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>planner</name>
+  <version>0.1.0</version>
+  <description>Hybrid A* path planner for differential-drive robots with ROS 2 lifecycle nodes.</description>
+  <maintainer email="seifelshafey@gmail.com">Seif ElShafey</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>eigen</depend>
+  <depend>libopencv-dev</depend>
+  <depend>yaml-cpp</depend>
+  <depend>libabsl-dev</depend>
+  <depend>nlohmann-json-dev</depend>
+  <test_depend>gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
