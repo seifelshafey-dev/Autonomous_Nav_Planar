@@ -21,6 +21,30 @@ if(BUILD_TESTING)
     test/test_mock_bringup.py
     TIMEOUT 180
   )
+
+  # System launch tests: the planner stack + controller driving the mock robot. They need the
+  # `planner` and `path_planner_msgs` packages (test_depend in package.xml). RUN_SERIAL keeps the
+  # heavyweight, timing-sensitive stacks from starving each other of CPU.
+  # Closed-loop controller tracking of a synthetic plan.
+  add_launch_test(
+    test/controller_tracking_test.py
+    TARGET controller_tracking_test
+    TIMEOUT 240
+    LABELS integration_closedloop
+  )
+  # Whole pipeline: /goal_pose -> navigator -> PlannerNode -> /plan -> controller -> mock robot.
+  # Generous timeout: the robot drives a detour around a wall.
+  add_launch_test(
+    test/planning_control_pipeline_test.py
+    TARGET planning_control_pipeline_test
+    TIMEOUT 720
+    LABELS integration_pipeline
+  )
+  set_tests_properties(
+    controller_tracking_test
+    planning_control_pipeline_test
+    PROPERTIES RUN_SERIAL TRUE
+  )
 endif()
 
 ament_package()
