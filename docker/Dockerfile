@@ -9,7 +9,9 @@ FROM ros@sha256:860e53793ccf575e5369b5e9a19939de2bfcfb46a299954d06f54f2af54fed19
 
 # Stage ci: build + test environment (dependencies only; sources are mounted at /ws/src).
 FROM base AS ci
-# ROS packages come from a dated snapshot so rebuilds resolve identical versions.
+# Ubuntu and ROS packages come from dated snapshots so rebuilds resolve identical versions.
+RUN sed -i 's,http://\(archive\|security\)\.ubuntu\.com/ubuntu/,https://snapshot.ubuntu.com/ubuntu/20261012T000000Z/,' /etc/apt/sources.list \
+    && ! grep -v '^#' /etc/apt/sources.list | grep -q '//\(archive\|security\)\.ubuntu'
 RUN export GNUPGHOME="$(mktemp -d)" K=4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA \
     && gpg --batch --keyserver hkps://keyserver.ubuntu.com --recv-keys "$K" \
     && gpg --batch --export "$K" > /usr/share/keyrings/ros-snapshot.gpg \
