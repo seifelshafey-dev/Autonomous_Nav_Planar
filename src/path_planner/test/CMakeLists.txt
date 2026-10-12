@@ -80,6 +80,10 @@ add_planner_test(heuristics_test unit/core/planner/hybrid_astar/heuristics_test.
 
 add_planner_test(obstacle_heuristic_test unit/core/planner/hybrid_astar/obstacle_heuristic_test.cpp)
 
+add_planner_test(build_hybrid_astar_test unit/core/planner/hybrid_astar/build_hybrid_astar_test.cpp)
+
+add_planner_test(search_test unit/core/planner/hybrid_astar/search_test.cpp)
+
 add_planner_test(escape_search_test unit/core/planner/escape/escape_search_test.cpp)
 add_planner_property_test(escape_search_property_test unit/core/planner/escape/escape_search_property_test.cpp)
 
@@ -105,6 +109,7 @@ add_planner_property_test(props_planner
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
     unit/core/planner/hybrid_astar/closed_set_property_test.cpp
     unit/core/planner/hybrid_astar/obstacle_heuristic_property_test.cpp
+    unit/core/planner/hybrid_astar/search_property_test.cpp
 )
 
 # Scenario image-occupancy decode. The test generates its grayscale PNG fixture at run time with
