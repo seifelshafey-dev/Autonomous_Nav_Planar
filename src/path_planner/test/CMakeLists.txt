@@ -60,7 +60,12 @@ add_planner_test(world_robot_geometry_test unit/core/motion/world_robot_geometry
 
 add_planner_test(distance_functions_test unit/core/motion/distance_functions_test.cpp)
 
+
+add_planner_test(motion_context_test unit/core/motion/motion_context_test.cpp unit/core/motion/kinematic_model_test.cpp)
+
 add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp)
+
+add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
 
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core
@@ -72,4 +77,7 @@ add_planner_property_test(props_core
     unit/core/motion/distance_functions_property_test.cpp
     unit/core/motion/motion_context_property_test.cpp
     unit/core/motion/kinematics/diff_drive_property_test.cpp
+)
+add_planner_property_test(props_planner
+    unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
 )
