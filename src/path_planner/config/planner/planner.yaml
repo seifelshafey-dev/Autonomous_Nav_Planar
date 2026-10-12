@@ -1,0 +1,26 @@
+---
+# Hybrid A* planner tuning. Unless noted, values are the AStarConfig defaults from config.hpp.
+a_star:
+  goal_pos_tol: 0.10         # m   — position acceptance radius
+  goal_heading_tol: 0.10     # rad — heading acceptance band
+  max_expansions: 200000     # hard cap on expanded nodes (stale or exact-rejected pops not counted) before declaring failure
+  max_plan_time_sec: 5.0     # s   — wall-clock budget per plan()
+  enable_shot: true          # try the analytic pivot-translate-pivot goal shot from each expanded node
+  shot_max_distance: 5.0     # m   — only try the shot within this radius of the goal
+  # Lets the analytic shot cross UNKNOWN cells (treat-as-traversable) to connect to goals through
+  # unmapped space. Safety precondition: a higher layer (reactive local planner / replan-on-map-update)
+  # must react faster than the robot traverses the unconfirmed region. Set false for a KNOWN-FREE shot.
+  shot_allow_unknown: true
+  closed_cell_size: 0.15     # m   — closed-set dedup cell; decouples pruning granularity from map resolution
+  node_pool_reserve: 200000  # initial node-pool capacity
+  closed_set_reserve: 200000 # initial closed-set capacity
+  # Weight of the costmap penalty relative to path distance. cost_policy values are per-metre rates
+  # that compose directly with the path-distance metric (both are line integrals); 1.0 = face value.
+  costmap_weight: 1.0
+
+heuristic:
+  weight: 1.0                # 1.0 = unscaled estimate; >1 = greedier search. The cheapest path is not guaranteed at any value.
+  # When true, h = max(obstacle-aware Dijkstra cost-to-goal, weighted-Euclidean). The Dijkstra field
+  # routes around obstacles (using the same costmap_weight as a_star), which prunes the obstacle-pocket
+  # trap. Set false to fall back to the pure weighted-Euclidean DistanceHeuristic.
+  use_obstacle_heuristic: true

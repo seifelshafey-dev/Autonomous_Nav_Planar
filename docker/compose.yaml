@@ -1,0 +1,21 @@
+# Run from the repo root: docker compose -f docker/compose.yaml run --rm dev
+x-ws: &ws
+  working_dir: /ws
+  volumes:
+    - ../src:/ws/src
+    - ws-build:/ws/build
+    - ws-install:/ws/install
+    - ws-log:/ws/log
+services:
+  dev:
+    <<: *ws
+    build: {context: .., dockerfile: docker/Dockerfile, target: ci}
+    image: planner-ci
+  sim:
+    <<: *ws
+    build: {context: .., dockerfile: docker/Dockerfile, target: sim}
+    image: planner-sim
+volumes:
+  ws-build:
+  ws-install:
+  ws-log:

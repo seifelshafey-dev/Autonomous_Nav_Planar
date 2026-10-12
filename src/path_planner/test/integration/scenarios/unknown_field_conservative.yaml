@@ -1,0 +1,57 @@
+# unknown_field_conservative.yaml
+#
+# Mirrors the unit test search_test.cpp :: HybridAstarSearch.expansionTraversesUnknownThatTheShotCannot.
+#
+# Design intent: an entirely UNKNOWN grid with NO obstacles. The conservative analytic shot
+# (shot_allow_unknown defaults to false) treats UNKNOWN as untraversable and is rejected on every
+# cell, so it can never connect to the goal. Primitive expansion, however, is free to cross UNKNOWN
+# (the EDT reports clamp everywhere with no obstacles), so a returned path proves expansion reached the
+# goal where the shot could not. A path therefore exists by design -> expect_found is true.
+#
+# The integration oracle's collision-free invariant only forbids OCCUPIED cells; crossing UNKNOWN is
+# expected here, matching the original case.
+
+name: unknown_field_conservative
+
+input:
+  grid:
+    cols: 30
+    rows: 30
+    resolution: 0.1
+    origin: [0.0, 0.0]
+
+  # Whole grid UNKNOWN: paint a single UNKNOWN rect covering every cell over the FREE base fill.
+  unknown:
+    - rect: [0, 0, 29, 29]
+      value: -1
+
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5
+    vmax: 1.0
+    atomic_time: 0.3
+    n_headings: 16
+
+  a_star:
+    enable_shot: true            # shot is attempted but rejected on UNKNOWN (shot_allow_unknown=false)
+    shot_allow_unknown: false
+    node_pool_reserve: 4096
+    closed_set_reserve: 4096
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: false
+
+  cost_policy:
+    clearance_radius: 0.3
+    clearance_decay: 5.0
+    max_clearance_cost: 100.0
+    unknown_cost_factor: 1.0
+
+  start: [0.5, 1.0, 0.0]
+  goal:  [2.5, 1.0, 0.0]
+
+expectations:
+  expect_found: true

@@ -1,0 +1,9 @@
+---
+vertices: [[0.3,0.3], [-0.3, 0.3], [-0.3,-0.3], [0.3,-0.3]] #m, body-local
+
+# vmax and atomic_time are starting values; tune them for your robot.
+diff_drive:
+  rmin: 0.3 #m
+  vmax: 0.5 #m/s, speed the planner's motion primitives are built at; controller v_cruise must not exceed this; checked when the navigator and controller nodes start
+  atomic_time: 0.6 #s, duration of one primitive; the straight primitive is vmax*atomic_time = 0.3 m long
+  n_headings: 16 #count, heading bins for the cached swept cells; bin width 2*pi/16 = 22.5 deg

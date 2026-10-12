@@ -1,0 +1,59 @@
+# all_unknown_room.yaml
+# Nothing is mapped yet except one wall: the whole 20 m x 12 m room is unknown space apart from a
+# 0.2 m thick wall in the middle. A path through unknown space must be found quickly.
+
+name: all_unknown_room
+
+input:
+  grid:
+    cols: 400
+    rows: 240
+    resolution: 0.05
+    origin: [0.0, 0.0]
+
+  obstacles:
+    - rect: [198, 60, 201, 180]
+  unknown:
+    - rect: [0, 0, 197, 239]
+    - rect: [202, 0, 399, 239]
+    - rect: [198, 0, 201, 59]
+    - rect: [198, 181, 201, 239]
+
+  robot:
+    vertices: [[0.3, 0.3], [-0.3, 0.3], [-0.3, -0.3], [0.3, -0.3]]
+
+  diff_drive:
+    rmin: 0.3
+    vmax: 0.5
+    atomic_time: 0.6
+    n_headings: 16
+
+  a_star:
+    goal_pos_tol: 0.10
+    goal_heading_tol: 0.10
+    max_expansions: 200000
+    max_plan_time_sec: 5.0
+    enable_shot: true
+    shot_max_distance: 5.0
+    shot_allow_unknown: true
+    closed_cell_size: 0.15
+    node_pool_reserve: 200000
+    closed_set_reserve: 200000
+    costmap_weight: 1.0
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: true
+
+  cost_policy:
+    clearance_radius: 0.70
+    clearance_decay: 4.5
+    max_clearance_cost: 30.0
+    unknown_cost_factor: 1.03
+
+  start: [4.0, 6.0, 0.0]
+  goal:  [16.0, 6.0, 0.0]
+
+expectations:
+  expect_found: true
+  expansions_max: 4000

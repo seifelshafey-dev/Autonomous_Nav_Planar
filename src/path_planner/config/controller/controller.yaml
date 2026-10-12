@@ -1,0 +1,27 @@
+# Pure-pursuit follower gains.
+# lookahead_gain is derived (L = gain * r_in/2) at the node; the rest are conservative seeds,
+# not derived optima — tune on sim/hardware.
+# Frames and control rate are ROS params on the ControllerNode, not part of this file.
+controller:
+  lookahead_gain: 3.0      # unitless k — absolute carrot L = k * (r_in/2), derived at the ControllerNode.
+                           #   Sample spacing is r_in/2, so k must exceed 1 (carrot stays a distinct point
+                           #   ahead). Pure pursuit tracks a smooth arc EXACTLY (cut is independent of L);
+                           #   the corner-cut arises only at curvature/heading junctions between primitives:
+                           #   e_corner(L,theta) = (L/2)*sin(theta/2). The tightest drive arc is 0.5*rmin =
+                           #   0.15 m, so k=3 (L=0.45) holds the worst real junction to a ~0.22 m cut.
+                           #   L < 2*rmin (=0.6 m here) is kept only as a harmless sanity cap, NOT the
+                           #   corner-cut lever (k is).
+                           #   Per-robot robustness knob in [2, <4): lower = tighter tracking, higher = smoother.
+  v_cruise: 0.5            # m/s   — hard ceiling on |v|; must not exceed vmax; checked when the navigator and controller nodes start; sign/pivot come from mode[], not speed[].
+                           #   Indoor cruise: higher speeds push the base past the pursuit tracking
+                           #   envelope and destabilize the odom->SLAM loop, so this stays inside the
+                           #   envelope the a_lat_max / wheel limits below were sized for.
+  a_lat_max: 0.5           # m/s^2 — lateral-accel bound; slows the base on tight arcs (v_arc=sqrt(a_lat*R)).
+                           #   Sized to engage at the planner's tightest DRIVE arc R = 0.5*rmin = 0.15 m:
+                           #   at 0.5 the base slows there to ~0.27 m/s (omega ~= 1.83 rad/s, under the
+                           #   +-2.0 angular ceiling). A larger bound stays inert on those arcs, so the base
+                           #   runs full v_cruise and the demanded omega = v/R gets clipped by the angular
+                           #   ceiling -> understeer/drift.
+  omega_pivot: 1.0         # rad/s — in-place turn rate for pivots and heading alignment
+  goal_pos_tol: 0.10       # m     — position tolerance for declaring the goal reached
+  goal_heading_tol: 0.10   # rad   — heading tolerance for the final goal-alignment pivot

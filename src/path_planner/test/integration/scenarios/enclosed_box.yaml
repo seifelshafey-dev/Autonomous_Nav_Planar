@@ -1,0 +1,57 @@
+# enclosed_box.yaml
+#
+# Mirrors the unit test search_test.cpp :: HybridAstarBoxedInStart.collisionFreeStartInsideClosedRingReturnsNoPath.
+#
+# Design intent: a solid 2-cell-thick OCCUPIED frame (cells [3,3]-[12,12], x/y in [0.3, 1.3) m) with a
+# carved FREE interior pocket (cells [5,5]-[10,10], a 0.6 m square, x/y in [0.5, 1.1) m) holds the
+# start at its centre (0.8, 0.8). The 0.2 m body leaves 0.2 m (2 cells) to every frame face, more than
+# the (sqrt(2)/2 + 1/2)*h = 0.121 m start-gate margin, so the start passes the gate and the search
+# expands inside the pocket. The goal sits OUTSIDE the frame. The frame is solid, so the open set
+# drains and the planner returns NoPath. expect_found is false BY GEOMETRY (the pocket is sealed),
+# not by observing a planner run.
+#
+# Cell rectangles are [c0, r0, c1, r1] inclusive (column, row); row 0 is the bottom of the grid.
+
+name: enclosed_box
+
+input:
+  grid:
+    cols: 20
+    rows: 20
+    resolution: 0.1
+    origin: [0.0, 0.0]
+
+  obstacles:
+    - rect: [3, 3, 12, 12]   # solid box
+      value: 100
+    - rect: [5, 5, 10, 10]   # carve a FREE interior pocket (start lives here)
+      value: 0
+
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5
+    vmax: 1.0
+    atomic_time: 0.3
+    n_headings: 16
+
+  a_star:
+    node_pool_reserve: 4096
+    closed_set_reserve: 4096
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: false   # original case ran the weighted-Euclidean heuristic
+
+  cost_policy:
+    clearance_radius: 0.3
+    clearance_decay: 5.0
+    max_clearance_cost: 100.0
+    unknown_cost_factor: 1.0
+
+  start: [0.8, 0.8, 0.0]    # inside the sealed pocket
+  goal:  [1.55, 1.55, 0.0]   # outside the frame, unreachable
+
+expectations:
+  expect_found: false

@@ -1,0 +1,11 @@
+# Tuning for the reactive /scan safety guard (ScanSafetyGuard). A hard, always-on backstop that
+# works without a map or localization; independent of the planner's soft clearance_radius.
+scan_guard:
+  linear_decel: 1.5            # m/s^2, deceleration the drive achieves when commanded to stop (robot property)
+  angular_decel: 2.5           # rad/s^2, same (robot property)
+  forward_pad: 0.02            # m, extra travel of the fastest footprint point after the modelled stop (choice)
+  side_pad: 0.01               # m, footprint inflation at every sampled pose; covers the continuous motion, not a sensor-noise allowance (choice)
+  stop_count: 2                # consecutive violating /cmd_vel_raw ticks before engaging STOP
+  clear_count: 10              # consecutive clear /cmd_vel_raw ticks before resuming PASS
+  stale_scan_timeout: 0.5      # s, max scan age before fail-safe STOP, independent of debounce
+  tf_lookup_timeout: 0.1       # s, max wait for the (static) scan-frame->base_link TF

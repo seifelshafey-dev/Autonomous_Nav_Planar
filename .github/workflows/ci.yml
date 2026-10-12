@@ -1,0 +1,87 @@
+name: ci
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**.md']
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore: ['docs/**', '**.md']
+permissions:
+  contents: read
+  packages: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  fast:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Pull image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ hashFiles('docker/Dockerfile') }}
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}/planner-ci:$TAG"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          for i in $(seq 30); do
+            docker pull "$IMAGE" && exit 0
+            echo "image not available yet ($i/30); waiting for image.yml"; sleep 60
+          done
+          echo "::error::$IMAGE never appeared; check the image.yml workflow run"
+          exit 1
+      - name: Build and test
+        run: |
+          docker run --rm -v "$PWD/src:/ws/src" "$IMAGE" bash -c '
+            cd /ws &&
+            colcon build --executor sequential --packages-select path_planner_msgs planner \
+              --cmake-args -DCMAKE_BUILD_TYPE=Release -DPLANNER_BUILD_PROPERTY_TESTS=OFF &&
+            colcon test --executor sequential --packages-select planner --ctest-args -L fast;
+            rc=$?; colcon test-result --verbose && exit $rc'
+  full:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Release, Debug]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Pull image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ hashFiles('docker/Dockerfile') }}
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}/planner-ci:$TAG"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          for i in $(seq 30); do
+            docker pull "$IMAGE" && exit 0
+            echo "image not available yet ($i/30); waiting for image.yml"; sleep 60
+          done
+          echo "::error::$IMAGE never appeared; check the image.yml workflow run"
+          exit 1
+      - name: Build and test
+        # The Debug leg is optimised with assertions on (NDEBUG undefined), so death tests run and the suite stays fast.
+        run: |
+          if [ "${{ matrix.build_type }}" = Release ]; then
+            pkgs="path_planner_msgs planner robot_bringup"
+            props=ON
+            label=""
+          else
+            pkgs="path_planner_msgs planner"
+            props=OFF
+            label="-L unit"
+          fi
+          docker run --rm -v "$PWD/src:/ws/src" -e PKGS="$pkgs" -e PROPS="$props" -e LABEL="$label" \
+            -e BT="${{ matrix.build_type }}" "$IMAGE" bash -c '
+            cd /ws &&
+            colcon build --executor sequential --packages-select $PKGS \
+              --cmake-args -DCMAKE_BUILD_TYPE=$BT -DPLANNER_BUILD_PROPERTY_TESTS=$PROPS "-DCMAKE_CXX_FLAGS_DEBUG=-O2 -g" &&
+            colcon test --executor sequential --packages-select $PKGS \
+              --ctest-args $LABEL;
+            rc=$?; colcon test-result --verbose && exit $rc'
