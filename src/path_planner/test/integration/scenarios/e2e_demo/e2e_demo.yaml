@@ -1,0 +1,86 @@
+# e2e_demo.yaml
+#
+# Shared end-to-end demo scenario. This is the offline-viz twin of the whole-stack ROS gate
+# (test/integration/ros/planning_control_pipeline_test.py): same robot footprint, diff-drive kinematics,
+# hybrid A* tuning, and cost policy as the production config the ROS planner_node loads
+# (config/robot/robot_params.yaml, config/planner/planner.yaml, config/cost_policy/cost_policy.yaml),
+# so the path planned here matches what the ROS planner produces for the same query.
+#
+# Query (MUST stay aligned with the E-E test):
+#   start = (0, 0, 0)     -- the robot spawns at the map origin (identity map->odom + robot_bringup
+#                            at the odom origin). The offline start MUST equal this.
+#   goal  = (3.0, 0.5, 0) -- same goal region as the E-E test (GOAL_X=3.0, GOAL_Y=0.5).
+#
+# Unlike the E-E test's all-FREE map, this scenario places ONE rectangular wall between start and
+# goal so the planned path is a meaningful detour (routes below the wall) rather than a straight
+# shot -- while staying reliably solvable.
+#
+# Geometry (grid origin (-3, -3), resolution 0.05, so cell (i,j) center = origin + (i+0.5, j+0.5)*res):
+#   grid  : 200 x 160 cells -> world x in [-3, 7], y in [-3, 5]
+#   start : world (0, 0)     -> cell (60, 60)   -- comfortably interior
+#   goal  : world (3.0, 0.5) -> cell (120, 70)  -- comfortably interior, ~4 m clear to the right edge
+#   wall  : world x in [1.3, 1.7], y in [-0.3, 2.0] -> cells [86, 54, 94, 100]
+#           blocks the straight start->goal line; the robot detours around its bottom (into y<-0.3,
+#           where there is ample free space down to y=-3). Footprint r_out ~= 0.42 m; start and goal
+#           both sit >1.2 m clear of the wall in x.
+#
+# Cell rectangles are [c0, r0, c1, r1] inclusive (column, row); row 0 is the bottom of the grid.
+
+name: e2e_demo
+
+input:
+  grid:
+    cols: 200          # 200 cells x 0.05 m = 10 m wide  -> world x in [-3, 7]
+    rows: 160          # 160 cells x 0.05 m =  8 m tall  -> world y in [-3, 5]
+    resolution: 0.05   # m / cell
+    origin: [-3.0, -3.0]  # world position of cell (0, 0); bottom-left
+
+  # Inline occupancy painted over a FREE (0) base fill: one wall between start and goal.
+  obstacles:
+    - rect: [86, 54, 94, 100]  # wall, world x~1.3-1.7 m, y~-0.3-2.0 m; blocks the straight line
+      value: 100               # OCCUPIED
+
+  # Production robot footprint (config/robot/robot_params.yaml): 0.6 m square, body-frame, CCW.
+  robot:
+    vertices: [[0.3, 0.3], [-0.3, 0.3], [-0.3, -0.3], [0.3, -0.3]]
+
+  # Production diff-drive kinematics (config/robot/robot_params.yaml).
+  diff_drive:
+    rmin: 0.3          # m   — min turning radius
+    vmax: 0.5          # m/s, speed the planner's motion primitives are built at; matches the controller's cruise speed
+    atomic_time: 0.6   # s, duration of one primitive; the straight primitive is vmax*atomic_time = 0.3 m long
+    n_headings: 16     # count, heading bins for the cached swept cells; bin width 2*pi/16 = 22.5 deg
+
+  # Production hybrid A* tuning (config/planner/planner.yaml).
+  a_star:
+    goal_pos_tol: 0.10
+    goal_heading_tol: 0.10
+    max_expansions: 200000
+    max_plan_time_sec: 5.0
+    enable_shot: true
+    shot_max_distance: 5.0
+    shot_allow_unknown: true
+    closed_cell_size: 0.15
+    node_pool_reserve: 200000
+    closed_set_reserve: 200000
+    costmap_weight: 1.0
+
+  # Production heuristic selection (config/planner/planner.yaml).
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: true
+
+  # Production cost policy (config/cost_policy/cost_policy.yaml) — kept in sync with production so the
+  # offline plan matches the ROS planner. Clearance brackets r_out (0.424) + the tracking budget
+  # e_track (~0.27), and the decay keeps the soft cost's outward gradient real across the tracking band.
+  cost_policy:
+    clearance_radius: 0.70   # m
+    clearance_decay: 4.5     # 1/m
+    max_clearance_cost: 30.0 # /m
+    unknown_cost_factor: 1.03        # /m
+
+  start: [0.0, 0.0, 0.0]   # world-frame (x, y, theta) -- MUST match the E-E robot spawn (map origin)
+  goal:  [3.0, 0.5, 0.0]   # world-frame; beyond the wall (matches E-E GOAL_X/GOAL_Y)
+
+expectations:
+  expect_found: true

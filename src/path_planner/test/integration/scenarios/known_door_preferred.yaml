@@ -1,0 +1,64 @@
+# known_door_preferred.yaml
+# Two doors in a wall across a 20 m x 12 m room. The door straight ahead of the start lies in a
+# 2 m patch of unknown space; an open, fully known door is 7 m further along the wall. The planner
+# must prefer known free space and take the known door without crossing any unknown cell.
+
+name: known_door_preferred
+
+input:
+  grid:
+    cols: 400
+    rows: 240
+    resolution: 0.05
+    origin: [0.0, 0.0]
+
+  obstacles:
+    - rect: [0, 0, 399, 3]
+    - rect: [0, 236, 399, 239]
+    - rect: [0, 0, 3, 239]
+    - rect: [396, 0, 399, 239]
+    - rect: [198, 0, 201, 44]
+    - rect: [198, 75, 201, 199]
+    - rect: [198, 230, 201, 239]
+  unknown:
+    - rect: [180, 45, 219, 74]
+
+  robot:
+    vertices: [[0.3, 0.3], [-0.3, 0.3], [-0.3, -0.3], [0.3, -0.3]]
+
+  diff_drive:
+    rmin: 0.3
+    vmax: 0.5
+    atomic_time: 0.6
+    n_headings: 16
+
+  a_star:
+    goal_pos_tol: 0.10
+    goal_heading_tol: 0.10
+    max_expansions: 200000
+    max_plan_time_sec: 5.0
+    enable_shot: true
+    shot_max_distance: 5.0
+    shot_allow_unknown: true
+    closed_cell_size: 0.15
+    node_pool_reserve: 200000
+    closed_set_reserve: 200000
+    costmap_weight: 1.0
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: true
+
+  cost_policy:
+    clearance_radius: 0.70
+    clearance_decay: 4.5
+    max_clearance_cost: 30.0
+    unknown_cost_factor: 1.03
+
+  start: [4.0, 3.0, 0.0]
+  goal:  [16.0, 3.0, 0.0]
+
+expectations:
+  expect_found: true
+  unknown_poses_max: 0
+  expansions_max: 60000

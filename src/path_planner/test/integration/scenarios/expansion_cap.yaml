@@ -1,0 +1,50 @@
+# expansion_cap.yaml
+#
+# Mirrors the unit test search_test.cpp :: HybridAstarSearch.maxExpansionsCapReturnsNullopt.
+#
+# Design intent: open free space, but max_expansions is pinned to 1 and the analytic shot is disabled.
+# The planner pops the start, expands once, and bails before the goal (4 m away, reachable only by a
+# long chain of 0.3 m primitive steps) can be reached. The expansion cap forces failure -> expect_found
+# is false by configuration, independent of the (trivially open) geometry.
+
+name: expansion_cap
+
+input:
+  grid:
+    cols: 60
+    rows: 60
+    resolution: 0.1
+    origin: [0.0, 0.0]
+
+  # No obstacles: base fill is FREE.
+
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5
+    vmax: 1.0
+    atomic_time: 0.3
+    n_headings: 16
+
+  a_star:
+    enable_shot: false   # force primitive expansion (no analytic shortcut to the goal)
+    max_expansions: 1    # pop start, expand once, then abort as failure
+    node_pool_reserve: 4096
+    closed_set_reserve: 4096
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: false
+
+  cost_policy:
+    clearance_radius: 0.3
+    clearance_decay: 5.0
+    max_clearance_cost: 100.0
+    unknown_cost_factor: 1.0
+
+  start: [1.0, 1.0, 0.0]
+  goal:  [5.0, 1.0, 0.0]
+
+expectations:
+  expect_found: false

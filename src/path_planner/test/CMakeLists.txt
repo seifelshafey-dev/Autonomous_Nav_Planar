@@ -122,3 +122,8 @@ add_planner_property_test(props_planner
 add_planner_test(scenario_loader_test unit/core/scenario/scenario_loader_test.cpp)
 target_include_directories(scenario_loader_test PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(scenario_loader_test PRIVATE ${OpenCV_LIBS})
+
+# Data-driven whole-planner integration tier (scenario corpus). Owns its own macro + runner; see
+# integration/CMakeLists.txt. Kept in a subdirectory so its `integration`-labeled ctest cases stay
+# selectable apart from the unit suite above.
+add_subdirectory(integration)

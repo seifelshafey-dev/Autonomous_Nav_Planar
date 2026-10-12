@@ -1,0 +1,50 @@
+# free_space_shot.yaml
+#
+# Mirrors the unit test search_test.cpp :: BuildHybridAstar.returnsUsablePlannerThatPlans /
+# HybridAstarSearch.freeSpaceShotReachesGoalExactly (existence + collision-free portion).
+#
+# Design intent: completely open free space with the goal a short, unobstructed straight line from the
+# start. The analytic shot connects directly on the first pop, so a path exists by geometry ->
+# expect_found is true. (The search_test sibling additionally pins the EXACT 1e-9 shot termination,
+# which is tighter than the integration oracle's goal-tolerance check and so stays a unit test.)
+
+name: free_space_shot
+
+input:
+  grid:
+    cols: 60
+    rows: 60
+    resolution: 0.1
+    origin: [0.0, 0.0]
+
+  # No obstacles: base fill is FREE.
+
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5
+    vmax: 1.0
+    atomic_time: 0.3
+    n_headings: 16
+
+  a_star:
+    enable_shot: true
+    node_pool_reserve: 4096
+    closed_set_reserve: 4096
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: false
+
+  cost_policy:
+    clearance_radius: 0.3
+    clearance_decay: 5.0
+    max_clearance_cost: 100.0
+    unknown_cost_factor: 1.0
+
+  start: [1.0, 1.0, 0.0]
+  goal:  [3.0, 1.0, 0.0]
+
+expectations:
+  expect_found: true

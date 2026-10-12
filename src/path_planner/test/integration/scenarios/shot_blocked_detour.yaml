@@ -1,0 +1,53 @@
+# shot_blocked_detour.yaml
+#
+# Mirrors the unit test search_test.cpp :: HybridAstarSearch.shotBlockedByObstacleStillFindsCollisionFreePath.
+#
+# Design intent: an OCCUPIED block ([13,13]-[17,17], centred near world (1.5, 1.5)) straddles the
+# straight start->goal line. The analytic shot through the block is rejected, so the search must route
+# AROUND it. A feasible detour clearly exists in the open 30x30 free space surrounding the block, so
+# expect_found is true by geometry. The integration oracle's universal collision-free invariant
+# (no sampled pose center in an OCCUPIED cell) reproduces the original test's hand-written assertion.
+#
+# Cell rectangles are [c0, r0, c1, r1] inclusive (column, row); row 0 is the bottom of the grid.
+
+name: shot_blocked_detour
+
+input:
+  grid:
+    cols: 30
+    rows: 30
+    resolution: 0.1
+    origin: [0.0, 0.0]
+
+  obstacles:
+    - rect: [13, 13, 17, 17]   # block straddling the straight line near world (1.5, 1.5)
+      value: 100
+
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5
+    vmax: 1.0
+    atomic_time: 0.3
+    n_headings: 16
+
+  a_star:
+    node_pool_reserve: 4096
+    closed_set_reserve: 4096
+
+  heuristic:
+    weight: 1.0
+    use_obstacle_heuristic: false
+
+  cost_policy:
+    clearance_radius: 0.3
+    clearance_decay: 5.0
+    max_clearance_cost: 100.0
+    unknown_cost_factor: 1.0
+
+  start: [0.5, 1.5, 0.0]
+  goal:  [2.5, 1.5, 0.0]
+
+expectations:
+  expect_found: true

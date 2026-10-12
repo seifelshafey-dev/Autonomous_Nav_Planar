@@ -1,0 +1,52 @@
+# straight_corridor.yaml
+#
+# Reference scenario reproducing the hardcoded scenario in tools/viz/search_viz_dump.cpp exactly:
+# a 160x160 @ 0.05 m (8 m x 8 m) grid with a central block the robot must route over, plus a small
+# off-route UNKNOWN patch. The robot travels straight across the map, detouring around the block.
+#
+# This file is the loader's reference fixture and the trace-dump smoke-test seed. The cell rectangles
+# below use [c0, r0, c1, r1] inclusive cell indices (column, row); row 0 is the bottom of the grid.
+
+name: straight_corridor
+
+input:
+  grid:
+    cols: 160          # 160 cells x 0.05 m = 8 m wide
+    rows: 160          # 160 cells x 0.05 m = 8 m tall
+    resolution: 0.05   # m / cell
+    origin: [0.0, 0.0] # world position of cell (0, 0); bottom-left
+
+  # Inline occupancy painted over a FREE (0) base fill.
+  obstacles:
+    - rect: [64, 40, 95, 79]   # central block, world x~3.2-4.8 m, y~2.0-4.0 m; blocks the straight line
+      value: 100               # OCCUPIED
+  unknown:
+    - rect: [8, 8, 24, 24]     # small off-route UNKNOWN patch (bottom-left), rendering only
+
+  # 0.2 m square robot footprint, body-frame, CCW.
+  robot:
+    vertices: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
+
+  diff_drive:
+    rmin: 0.5          # m   — min turning radius
+    vmax: 1.0          # m/s
+    atomic_time: 0.3   # s   — per-primitive control duration
+    n_headings: 16     # heading bins for swept-footprint caching
+
+  # a_star omitted entirely -> AStarConfig struct defaults (matches the viz dump's `const AStarConfig cfg;`).
+
+  heuristic:
+    weight: 1.0                  # 1.0 = unscaled estimate
+    use_obstacle_heuristic: true # default; max(ObstacleHeuristic field, weighted-Euclidean)
+
+  cost_policy:
+    clearance_radius: 0.5    # m
+    clearance_decay: 15.0    # 1/m
+    max_clearance_cost: 30.0 # /m
+    unknown_cost_factor: 1.0        # /m
+
+  start: [1.0, 4.0, 0.0]   # world-frame (x, y, theta)
+  goal:  [7.0, 4.0, 0.0]
+
+expectations:
+  expect_found: true
