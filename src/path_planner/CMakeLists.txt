@@ -47,6 +47,7 @@ add_library(path_planner
     src/core/planner/hybrid_astar/search.cpp
     src/core/planner/hybrid_astar/build_hybrid_astar.cpp
     src/core/planner/hybrid_astar/obstacle_heuristic.cpp
+    src/core/planner/validation/path_validity.cpp
     src/core/planner/escape/escape_search.cpp
     src/core/scenario/scenario_loader.cpp
     src/core/scenario/scenario_planner.cpp

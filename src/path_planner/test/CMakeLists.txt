@@ -86,6 +86,7 @@ add_planner_test(search_test unit/core/planner/hybrid_astar/search_test.cpp)
 
 add_planner_test(escape_search_test unit/core/planner/escape/escape_search_test.cpp)
 add_planner_property_test(escape_search_property_test unit/core/planner/escape/escape_search_property_test.cpp)
+add_planner_test(path_validity_test unit/core/planner/validation/path_validity_test.cpp)
 
 add_planner_test(config_loader_test unit/core/config/config_loader_test.cpp)
 
@@ -104,6 +105,9 @@ add_planner_property_test(swept_cover_property_test
     unit/core/planner/primitives/swept_cover_property_test.cpp
     unit/core/planner/primitives/agreement_cover_property_test.cpp)
 add_planner_property_test(exact_cover_property_test unit/core/planner/primitives/exact_cover_property_test.cpp)
+
+# Fixed-seed loop of 300 returned paths; every returned path must pass the plain path monitor.
+add_planner_test(path_monitor_agreement_test unit/core/planner/validation/path_monitor_agreement_test.cpp)
 add_planner_property_test(props_planner
     unit/core/planner/cost/costmap_property_test.cpp
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
