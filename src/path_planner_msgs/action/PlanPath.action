@@ -1,0 +1,21 @@
+# Goal
+geometry_msgs/PoseStamped goal  # goal pose; its frame must be the planner's planning_frame; the start is the robot's current pose
+---
+# Result
+uint8 FOUND=0
+uint8 START_BLOCKED=1
+uint8 GOAL_BLOCKED=2
+uint8 NO_PATH=3
+uint8 BUDGET_EXHAUSTED=4
+uint8 STOPPED=5
+uint8 outcome            # one of the codes above; trajectory is populated iff FOUND
+path_planner_msgs/PlanTrajectory trajectory
+uint32 expansions        # number of search expansions recorded; 0 unless outcome is FOUND
+# Total cost of this path: weighted-Euclidean SE(2) arc length
+# (rotation weighted by rmin^2) + costmap soft-penalty line integral. Lower is better.
+# 0.0 unless outcome is FOUND.
+float64 cost
+---
+# Feedback
+uint32 expansions        # search expansions recorded so far
+float64 best_f           # f-value of the most recent expansion

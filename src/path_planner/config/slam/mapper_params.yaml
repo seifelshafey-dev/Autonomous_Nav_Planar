@@ -1,0 +1,104 @@
+# The top-level key is the /** wildcard, not the node name `slam_toolbox`. planning_system.launch.py
+# overrides transform_publish_period, and launch_ros writes that override under /**. With a
+# node-name key here, rcl would rank this file's value above the override whenever the node also
+# gets a `-p` argument, which use_sim_time always is, and slam_toolbox would keep broadcasting
+# map->odom next to the EKF.
+/**:
+  ros__parameters:
+
+    # Plugin params
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ROS Parameters — frames overridden to match the planner (map / odom / base_link).
+    # base_frame differs from the stock default (base_footprint); the planner's robot_frame_
+    # is base_link, so the SLAM TF tree must use base_link or map->base_link lookups fail.
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    use_map_saver: true
+    # mode and map_file_name are supplied by the launch (slam_mode / map_file args); do not set here.
+    # In localization mode the saved map is loaded with the robot at the map's first pose, the pose
+    # where the mapping run started.
+    map_start_at_dock: true
+
+    debug_logging: false
+    throttle_scans: 1
+    transform_publish_period: 0.02 #if 0 never publishes odometry
+    # /map regeneration cadence, and the replan-detection lever: the planner's map provider is
+    # subscription-driven, so a newly-seen obstacle only triggers replan once /map refreshes. At
+    # v_cruise 0.5 m/s, 0.5 s keeps that to ~0.25 m of travel into UNKNOWN space between refreshes
+    # (a slower cadence lets the base drive metres past a new obstacle before it can react).
+    map_update_interval: 0.5
+    resolution: 0.05
+    # Match the sensor's real range window (lidar.xacro <min>0.15</min> / <max>20.0</max>).
+    min_laser_range: 0.15
+    max_laser_range: 19.5  # MUST be < sensor <max>20.0</max>: near-max / no-return beams otherwise
+                           # clear free space instead of being integrated. More usable range = more
+                           # structure per scan -> better-constrained scan matches.
+    minimum_time_interval: 0.25  # s — at v_cruise 0.5 m/s the 0.2 m travel trigger fires ~every 0.4 s;
+                                 # keep travel-distance the binding keyframe trigger, not time.
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.
+    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
+    enable_interactive_mode: true
+
+    # General Parameters
+    use_scan_matching: true
+    use_scan_barycenter: true
+    # Dense keyframes so each match's odom delta stays inside the +-0.25 m correlation window
+    # (correlation_search_space_dimension 0.5), preventing scan-match divergence.
+    minimum_travel_distance: 0.2  # m
+    minimum_travel_heading: 0.2   # rad — ~11.5 deg spacing; keeps per-match yaw change small enough
+                                  #       for the matcher to track through pivots
+    scan_buffer_size: 10
+    # Use the longer-range returns for scan matching too (kept parallel to max_laser_range 19.5).
+    scan_buffer_maximum_scan_distance: 19.5
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    # On for drift correction on revisit. Safe here: the map smear traces to front-end SEQUENTIAL
+    # scan-match divergence (addressed by the odom-trust variance penalties below), not to false
+    # loop closures.
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # Correlation Parameters
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    # Sharpens the correlation peak; stays well above the search resolution (0.01).
+    correlation_search_space_smear_deviation: 0.05
+
+    # Correlation Parameters - Loop Closure Parameters
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # Scan Matcher Parameters.
+    # NOTE the Karto sign convention: DECREASING these variance penalties INCREASES odom trust
+    # (the variance sits in the denominator, so a smaller value STEEPENS the penalty). Both anchors
+    # are steepened so the odom prior constrains the scan match in feature-poor space, where
+    # sequential scan-matching alone can drift.
+    distance_variance_penalty: 0.2  # steepen the translational odom anchor
+    angle_variance_penalty: 0.3     # steepen the angular odom anchor (minimum_angle_penalty is 0.5)
+
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    # Stock 0.9 floors the angle penalty to a <=10% score cut even for >40 deg yaw disagreements, so
+    # rotationally-aliased matches are barely penalized. 0.5 lets it bite on wild-yaw candidates while
+    # staying dense-safe: correct matches sit near the odom prior, so the penalty does not trigger there.
+    minimum_angle_penalty: 0.5
+    # Lets the distance penalty actually bite (parallel to minimum_angle_penalty 0.5).
+    minimum_distance_penalty: 0.3
+    use_response_expansion: true
+    min_pass_through: 2
+    occupancy_threshold: 0.1

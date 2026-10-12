@@ -1,0 +1,6 @@
+lifecycle_manager:
+  ros__parameters:
+    autostart: true
+    node_names: [map_server, planner_node]
+    bond_timeout: 4.0
+    attempt_respawn_reconnection: true
