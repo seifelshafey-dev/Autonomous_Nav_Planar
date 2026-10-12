@@ -14,11 +14,11 @@ The simulator renders in software. `docker/compose.yaml` passes no GPU device an
 
 ## Version locking
 
-ROS packages come from the dated snapshot `http://snapshots.ros.org/humble/2026-09-14/ubuntu`. Its signing key has to be fetched by full fingerprint (`4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA`); the key in the base image does not verify the snapshot. Ubuntu packages are locked by the base digest.
+ROS packages come from the dated snapshot `http://snapshots.ros.org/humble/2026-09-14/ubuntu`. Its signing key has to be fetched by full fingerprint (`4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA`); the key in the base image does not verify the snapshot. Ubuntu packages come from the dated snapshot `https://snapshot.ubuntu.com/ubuntu/20261012T000000Z`, which the Dockerfile writes over the archive and security entries of the base image.
 
 `docker/apt-lock.txt` lists every package installed in the `sim` image with its exact version. `docker/check-lock.sh <image>` exits 1 and prints the offending lines when the image holds a package or version that is not in the lock. The lock comes from `sim`, a superset of `ci`, so lock entries missing from `ci` are expected.
 
-To update, change the snapshot date (and the digest if wanted) in the Dockerfile, rebuild `sim`, and regenerate the lock with the command in the header of `docker/Dockerfile`.
+To update, change the two snapshot dates (and the digest if wanted) in the Dockerfile, rebuild `sim`, and regenerate the lock with the command in the header of `docker/Dockerfile`.
 
 ## Container commands
 
