@@ -65,6 +65,9 @@ add_planner_test(motion_context_test unit/core/motion/motion_context_test.cpp un
 
 add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp)
 
+add_planner_test(collision_checker_test unit/core/collision_checker/collision_checker_test.cpp)
+add_planner_property_test(collision_checker_property_test unit/core/collision_checker/collision_checker_property_test.cpp)
+
 add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
 
 # Property executables. Each is built from several test files (one source per original test).
