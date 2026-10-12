@@ -78,6 +78,9 @@ add_planner_test(heuristics_test unit/core/planner/hybrid_astar/heuristics_test.
 
 add_planner_test(obstacle_heuristic_test unit/core/planner/hybrid_astar/obstacle_heuristic_test.cpp)
 
+add_planner_test(escape_search_test unit/core/planner/escape/escape_search_test.cpp)
+add_planner_property_test(escape_search_property_test unit/core/planner/escape/escape_search_property_test.cpp)
+
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core
     unit/core/types/math/wrap_angle_property_test.cpp
