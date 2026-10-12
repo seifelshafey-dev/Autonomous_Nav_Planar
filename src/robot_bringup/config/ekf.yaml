@@ -1,0 +1,90 @@
+# Single-instance EKF (world_frame: map) that owns map->odom, replacing slam_toolbox's suppressed
+# broadcast (its transform_publish_period is driven to 0.0 via the slam_transform_publish_period
+# launch arg forwarded from sim_system.launch.py -- MUST stay in effect together with this node
+# running).
+#
+# PLACEMENT: this EKF is REFERENCE INTEGRATION, not part of the
+# planner library. Unlike the reactive /scan safety node, it is not incumbent for the planner's own
+# functionality, and -- decisively -- it is the bridge between two packages: it fuses /odom (from
+# robot_bringup's sim/diff_drive stack) and /pose (from planning_system's slam_toolbox), and the ONLY
+# launch composition where BOTH topics are alive is robot_bringup/sim_system.launch.py. So the config
+# and its launch wiring live in robot_bringup, not in the planner package.
+#
+# Fuses:
+#   odom0 (/odom, diff_drive_controller)  -- the clean local motion source (measured against simulator ground truth:
+#                                            0.15 %/m translational drift, 0.18 deg/rev heading drift).
+#   pose0 (/pose, slam_toolbox)           -- the absolute (occasionally aliased) correction.
+#
+# diff_drive_controller keeps owning odom->base_link unchanged (enable_odom_tf: true);
+# this filter owns ONLY map->odom. Neither ControllerNode's tracking loop (already odom-frame)
+# nor any other node's TF lookups need code changes -- they consume tf2, not a specific publisher.
+ekf_filter_node:
+  ros__parameters:
+    # use_sim_time intentionally NOT set here -- sim_system.launch.py passes {'use_sim_time': ...} in
+    # this node's parameters list (matching its rviz_node precedent), so the launch arg stays the
+    # single sim<->real knob and this file stays clock-agnostic.
+
+    frequency: 20.0        # Hz -- map->odom publish rate. NOT in the hot control loop: ControllerNode
+                           #   tracks in odom and only re-transforms the plan once per /plan,
+                           #   and PlannerNode resolves its TF start once per goal request -- so this
+                           #   just needs to stay fresh enough for RViz and occasional TF consumers,
+                           #   not to match any 20 Hz+ hot path. Matches ctrl_rate for round-number
+                           #   consistency with the rest of the stack, not because it needs to.
+    sensor_timeout: 0.5    # s -- same staleness limit as
+                           #   ScanSafetyGuard's stale_scan_timeout.
+    two_d_mode: true       # planar diff-drive: constrains z/roll/pitch (and their derivatives) to 0
+                           #   regardless of what odom0_config/pose0_config request for those fields.
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: map       # publishes map->odom (NOT odom->base_link -- diff_drive_controller already
+                           #   owns that edge). Requires odom->base_link to already be published by
+                           #   someone else, which it is (robot_localization's own documented
+                           #   precondition for world_frame: map).
+
+    transform_time_offset: 0.0   # s -- no measured publish-latency compensation; revisit only if TF
+                                 #   extrapolation warnings are observed at runtime.
+    transform_timeout: 0.2       # s -- matches mapper_params.yaml's existing transform_timeout: 0.2,
+                                 #   keeping one TF-wait-budget convention across the stack.
+    publish_tf: true             # explicit: this filter is now the map->odom broadcaster.
+
+    odom0: /odom
+    # [x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az]
+    odom0_config: [true,  true,  false, false, false, true,
+                   true,  true,  false, false, false, true,
+                   false, false, false]
+    odom0_differential: true    # fuse wheel odom as relative motion (delta position/yaw + velocity),
+                                 #   not an absolute position -- standard robot_localization guidance
+                                 #   for a source that is not independently drift-free at MAP scale
+                                 #   (odom drifts slowly even though it is accurate
+                                 #   per metre); lets pose0 own the absolute map-scale correction.
+    odom0_relative: false
+    odom0_nodelay: false
+
+    pose0: /pose
+    pose0_config: [true,  true,  false, false, false, true,
+                   false, false, false, false, false, false,
+                   false, false, false]
+    pose0_differential: false   # absolute fusion: this IS the map-scale correction odom0 does not own.
+    pose0_relative: false
+    pose0_nodelay: false
+    # THE CRUX PARAMETER: Mahalanobis-distance gate. Rejects a pose0 update
+    # outright (not down-weighted, DROPPED) if it is too inconsistent with the filter's current
+    # odom-anchored belief. This is what keeps a wrong SLAM pose out of the filter -- NOT
+    # pose0's self-reported covariance, which is not guaranteed to flag a confidently-wrong
+    # correlation-search bin-snap.
+    #
+    # The stock value is kept: it already resolves the mislocalization in the GPU sim, and a
+    # tuning pass found no clearly better one. The ekf_config launch argument of sim_system
+    # loads another file for comparison.
+    pose0_rejection_threshold: 3.0   # stock value, accepted; resolves the mislocalization untuned.
+
+    # process_noise_covariance: intentionally omitted -- robot_localization's stock default matrix is
+    # accepted. The tuning pass (see pose0_rejection_threshold above) found no
+    # clearly-better Q, and the stock EKF already resolves the mislocalization. To tune it,
+    # scale DOWN the x/y/yaw and vx/vyaw diagonal terms
+    # (indices 0,1,5,6,11) to reflect the low measured odom noise, and tune jointly with the
+    # rejection threshold; do not invent a full 15x15 matrix without that empirical pass.
+
+    print_diagnostics: false

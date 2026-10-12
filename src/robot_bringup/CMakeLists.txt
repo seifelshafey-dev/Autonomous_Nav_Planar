@@ -7,7 +7,7 @@ find_package(ament_cmake_python REQUIRED)
 # The package builds no compiled target -- it installs the URDF, controllers config, launch
 # files, RViz config, and (operator-populated) maps into the package share tree.
 install(
-  DIRECTORY urdf config launch worlds maps
+  DIRECTORY urdf config launch worlds rviz maps
   DESTINATION share/${PROJECT_NAME}/
 )
 
