@@ -109,6 +109,7 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
         src/ros/map_provider/map_provider_server.cpp
         src/ros/planner_server/planner_node.cpp
         src/ros/planner_server/plan_conversions.cpp
+        src/ros/navigator/navigator.cpp
     )
     target_include_directories(planner_ros
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -128,6 +129,14 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
             ${visualization_msgs_TARGETS}
             ${std_msgs_TARGETS}
             bondcpp::bondcpp
+    )
+
+    add_executable(planning_container src/ros/app/planning_container_main.cpp)
+    target_link_libraries(planning_container
+        PRIVATE
+            planner_ros
+            rclcpp::rclcpp
+            rclcpp_lifecycle::rclcpp_lifecycle
     )
 endif()
 

@@ -149,6 +149,14 @@ if(TARGET planner_ros)
     target_link_libraries(planner_lifecycle_test PRIVATE planner_ros GTest::gtest)
     add_test(NAME planner_lifecycle_test COMMAND planner_lifecycle_test)
     set_property(TEST planner_lifecycle_test APPEND PROPERTY LABELS fast unit)
+
+    # Navigator node against a scripted plan_path server (one process, one executor). Topic and
+    # action names are graph-global, so it never runs alongside another ROS test.
+    add_executable(navigator_test unit/ros/navigator_test.cpp)
+    target_link_libraries(navigator_test PRIVATE planner_ros GTest::gtest)
+    add_test(NAME navigator_test COMMAND navigator_test)
+    set_property(TEST navigator_test APPEND PROPERTY LABELS fast unit)
+    set_tests_properties(navigator_test PROPERTIES RUN_SERIAL TRUE TIMEOUT 120)
 endif()
 
 # Data-driven whole-planner integration tier (scenario corpus). Owns its own macro + runner; see
