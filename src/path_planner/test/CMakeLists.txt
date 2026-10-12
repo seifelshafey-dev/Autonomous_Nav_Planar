@@ -143,3 +143,7 @@ target_link_libraries(scenario_loader_test PRIVATE ${OpenCV_LIBS})
 # integration/CMakeLists.txt. Kept in a subdirectory so its `integration`-labeled ctest cases stay
 # selectable apart from the unit suite above.
 add_subdirectory(integration)
+
+# Tooling tests. The viz trace-dump smoke test (viz_trace_dump_smoke) lives here so it builds under
+# BUILD_TESTING regardless of BUILD_TOOLS; see tools/viz/CMakeLists.txt.
+add_subdirectory(tools/viz)

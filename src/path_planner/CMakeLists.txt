@@ -83,6 +83,12 @@ if(CURL_FOUND)
     target_link_libraries(path_planner PUBLIC CURL::libcurl)
 endif()
 
+option(BUILD_TOOLS "Build non-ROS visualization/debug tools" OFF)
+
+if(BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
+
 option(BUILD_TESTING "Build unit tests" OFF)
 
 if(BUILD_TESTING)
