@@ -34,6 +34,7 @@ find_package(CURL QUIET)
 
 add_library(path_planner
     src/core/robot/robot_params.cpp
+    src/core/config/config_loader.cpp
     src/core/map/rasterize.cpp
     src/core/map/edt.cpp
     src/core/map/map_signature.cpp

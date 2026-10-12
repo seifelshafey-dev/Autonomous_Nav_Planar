@@ -68,6 +68,8 @@ add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp
 add_planner_test(collision_checker_test unit/core/collision_checker/collision_checker_test.cpp)
 add_planner_property_test(collision_checker_property_test unit/core/collision_checker/collision_checker_property_test.cpp)
 
+add_planner_test(costmap_test unit/core/planner/cost/costmap_test.cpp)
+
 add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
 
 add_planner_test(closed_set_test unit/core/planner/hybrid_astar/closed_set_test.cpp)
@@ -80,6 +82,8 @@ add_planner_test(obstacle_heuristic_test unit/core/planner/hybrid_astar/obstacle
 
 add_planner_test(escape_search_test unit/core/planner/escape/escape_search_test.cpp)
 add_planner_property_test(escape_search_property_test unit/core/planner/escape/escape_search_property_test.cpp)
+
+add_planner_test(config_loader_test unit/core/config/config_loader_test.cpp)
 
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core

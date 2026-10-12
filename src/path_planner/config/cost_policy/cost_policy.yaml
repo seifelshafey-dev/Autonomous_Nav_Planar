@@ -1,0 +1,18 @@
+---
+# Costmap penalties (soft, additive to g). PER-METRE rates calibrated against the path-distance metric
+# (travel = 1/m): the planner accumulates them as a line integral (mean per-cell cost x distance), so
+# they compose directly with travel cost and are invariant to trajectory-sampling density.
+#
+# Clearance cost = max_clearance_cost * exp(-clearance_decay * edt), for edt < clearance_radius, else 0.
+cost_policy:
+  clearance_radius: 0.70     # m    — inflation band; must exceed the robot's circumscribed radius r_out
+                             #        (checked at planner assembly); the band beyond r_out is the tracking allowance.
+  clearance_decay: 4.5       # 1/m  — exp falloff. Shallow enough to keep a real gradient across the
+                             #        tracking allowance beyond r_out; a steeper falloff flattens to ~0
+                             #        before that band, leaving no push where the centreline needs biasing.
+  max_clearance_cost: 30.0   # /m   — at the wall (edt→0); >> 1/m travel so paths avoid hugging obstacles
+  unknown_cost_factor: 1.03  # —    — cost of a metre of unknown or out-of-map space as a multiple of the dearest
+                             #        metre of known free space the robot can occupy. Must be >= 1 (loading fails
+                             #        otherwise). The planner computes the per-metre cost from this factor, the
+                             #        robot's inscribed radius, the grid resolution and the clearance settings
+                             #        above; higher values make the planner less willing to explore.

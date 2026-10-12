@@ -1,0 +1,13 @@
+# Navigator: sequences planning, driving and clearing a blocked start.
+# Conservative seeds, not derived optima — tune on sim/hardware.
+navigator:
+  tick_period_sec: 0.5         # s — period of the navigator timer (map check, stall and retry rules).
+  stall_timeout: 5.0           # s — seconds without cursor change before a stall is declared; must exceed the follower's final approach plus final turn time, computed from the controller settings and checked when the navigator node starts.
+  blocked_retry_period: 2.0    # s — minimum time between plan requests while blocked.
+  max_clearing_attempts: 2     # count — escape moves driven per goal between two found plans (a search that finds none does not count); once used up the navigator stays Blocked(NoEscape), keeps re-planning on the retry period, and moves again only if a plan is found or a new goal arrives.
+  max_stall_replans: 4         # count >= 0 — replans allowed per goal after a stall (no progress for stall_timeout) before reporting stuck; movement along the path does not reset the count.
+  escape_speed_scale: 0.5      # fraction of full speed in (0, 1] — speed of the plan carrying the clearing move.
+  escape:
+    step_fraction: 0.4         # fraction of grid resolution in (0, 1) — length of one step of the clearing move.
+    slack_cells: 1             # cells (>= 0) — extra clearance aimed for at the end pose.
+    max_travel_factor: 5.0     # footprint outer radii (> 0) — longest straight clearing travel.
