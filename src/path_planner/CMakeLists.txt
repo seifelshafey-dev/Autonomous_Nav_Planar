@@ -180,6 +180,9 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
         install(TARGETS planning_container controller scan_safety_guard
             RUNTIME DESTINATION lib/${PROJECT_NAME}
         )
+        install(DIRECTORY launch/
+            DESTINATION share/${PROJECT_NAME}/launch
+        )
         install(DIRECTORY config/
             DESTINATION share/${PROJECT_NAME}/config
         )
@@ -209,6 +212,11 @@ if(BUILD_TESTING)
     # them (plus ament_cmake) here — a pure-C++ test build (no ROS toolchain) simply skips the case.
     if(rclcpp_lifecycle_FOUND AND ament_cmake_FOUND)
         find_package(launch_testing_ament_cmake REQUIRED)
+        add_launch_test(
+            test/integration/ros/lifecycle_bringup_test.py
+            TARGET lifecycle_bringup_test
+            TIMEOUT 120
+        )
 
         # Reactive /scan safety guard gate. Composes a tf2_ros static_transform_publisher
         # for the STATIC lidar_link->base_link TF, plus fake /scan + /cmd_vel_raw
@@ -228,11 +236,13 @@ if(BUILD_TESTING)
         # under `colcon test` starves them of CPU. RUN_SERIAL tells ctest to never run these in parallel
         # with each other or any other test.
         set_tests_properties(
+            lifecycle_bringup_test
             scan_safety_guard_test
             PROPERTIES RUN_SERIAL TRUE
         )
         # Lane: launch tests are `full`.
         set_property(TEST
+            lifecycle_bringup_test
             scan_safety_guard_test
             APPEND PROPERTY LABELS full)
     endif()
