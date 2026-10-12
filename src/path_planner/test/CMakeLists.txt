@@ -78,6 +78,10 @@ add_planner_property_test(props_core
     unit/core/motion/motion_context_property_test.cpp
     unit/core/motion/kinematics/diff_drive_property_test.cpp
 )
+add_planner_property_test(swept_cover_property_test
+    unit/core/planner/primitives/swept_cover_property_test.cpp
+    unit/core/planner/primitives/agreement_cover_property_test.cpp)
+add_planner_property_test(exact_cover_property_test unit/core/planner/primitives/exact_cover_property_test.cpp)
 add_planner_property_test(props_planner
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
 )
