@@ -70,6 +70,10 @@ add_planner_property_test(collision_checker_property_test unit/core/collision_ch
 
 add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
 
+add_planner_test(heuristics_test unit/core/planner/hybrid_astar/heuristics_test.cpp)
+
+add_planner_test(obstacle_heuristic_test unit/core/planner/hybrid_astar/obstacle_heuristic_test.cpp)
+
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core
     unit/core/types/math/wrap_angle_property_test.cpp
@@ -86,5 +90,7 @@ add_planner_property_test(swept_cover_property_test
     unit/core/planner/primitives/agreement_cover_property_test.cpp)
 add_planner_property_test(exact_cover_property_test unit/core/planner/primitives/exact_cover_property_test.cpp)
 add_planner_property_test(props_planner
+    unit/core/planner/cost/costmap_property_test.cpp
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
+    unit/core/planner/hybrid_astar/obstacle_heuristic_property_test.cpp
 )
