@@ -95,6 +95,7 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
     find_package(tf2 REQUIRED)
     find_package(tf2_geometry_msgs REQUIRED)
     find_package(geometry_msgs REQUIRED)
+    find_package(sensor_msgs REQUIRED)
     find_package(path_planner_msgs REQUIRED)
     find_package(visualization_msgs REQUIRED)
     find_package(std_msgs REQUIRED)
@@ -138,6 +139,51 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
             rclcpp::rclcpp
             rclcpp_lifecycle::rclcpp_lifecycle
     )
+
+    # Pure-pursuit follower: thin ROS adapter over the ROS-free PurePursuit core (in path_planner).
+    add_library(controller_lib src/ros/controller/controller_node.cpp)
+    target_include_directories(controller_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(controller_lib
+        PUBLIC
+            path_planner
+            rclcpp::rclcpp
+            tf2_ros::tf2_ros
+            ${tf2_TARGETS}
+            ${tf2_geometry_msgs_TARGETS}
+            ${geometry_msgs_TARGETS}
+            ${nav_msgs_TARGETS}
+            ${path_planner_msgs_TARGETS}
+    )
+
+    add_executable(controller src/ros/app/controller_main.cpp)
+    target_link_libraries(controller PRIVATE controller_lib)
+
+    # Reactive /scan safety guard: thin ROS adapter over the ROS-free footprint geometry
+    # (RobotParams/HalfPlane in path_planner). Point-vs-polygon only; no grid/EDT/rasterizer.
+    add_library(scan_safety_guard_lib src/ros/safety/scan_safety_guard.cpp)
+    target_include_directories(scan_safety_guard_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(scan_safety_guard_lib
+        PUBLIC
+            path_planner
+            rclcpp::rclcpp
+            tf2_ros::tf2_ros
+            ${tf2_TARGETS}
+            ${tf2_geometry_msgs_TARGETS}
+            ${geometry_msgs_TARGETS}
+            ${sensor_msgs_TARGETS}
+    )
+
+    add_executable(scan_safety_guard src/ros/app/scan_safety_guard_main.cpp)
+    target_link_libraries(scan_safety_guard PRIVATE scan_safety_guard_lib)
+
+    if(ament_cmake_FOUND)
+        install(TARGETS planning_container controller scan_safety_guard
+            RUNTIME DESTINATION lib/${PROJECT_NAME}
+        )
+        install(DIRECTORY config/
+            DESTINATION share/${PROJECT_NAME}/config
+        )
+    endif()
 endif()
 
 option(BUILD_TOOLS "Build non-ROS visualization/debug tools" OFF)
@@ -155,6 +201,41 @@ if(BUILD_TESTING)
     enable_testing()
     include(GoogleTest)
     add_subdirectory(test)
+
+    # ROS bring-up gate (launch_testing). Registered HERE, after enable_testing(), NOT inside the
+    # ROS guard at the top of this file: add_launch_test() calls add_test(), which requires
+    # enable_testing() to have already run, and that guard block executes long before this point.
+    # The ROS find_package _FOUND vars set in that guard persist into this scope, so we re-guard on
+    # them (plus ament_cmake) here — a pure-C++ test build (no ROS toolchain) simply skips the case.
+    if(rclcpp_lifecycle_FOUND AND ament_cmake_FOUND)
+        find_package(launch_testing_ament_cmake REQUIRED)
+
+        # Reactive /scan safety guard gate. Composes a tf2_ros static_transform_publisher
+        # for the STATIC lidar_link->base_link TF, plus fake /scan + /cmd_vel_raw
+        # publishers and the guard under test, and asserts the guard safe-stops on an in-footprint
+        # return -- deliberately with NO map frame in the TF tree, proving the guard is decoupled
+        # from SLAM/localization. Carries a DISTINCT ctest label (integration_safety) so it is
+        # separable from the core sweep and the other launch gates, and never gates the core
+        # GoogleTest/RapidCheck gate.
+        add_launch_test(
+            test/integration/ros/scan_safety_guard_test.py
+            TARGET scan_safety_guard_test
+            TIMEOUT 240
+            LABELS integration_safety
+        )
+
+        # Serialize the heavyweight / timing-sensitive launch_testing gates: running them concurrently
+        # under `colcon test` starves them of CPU. RUN_SERIAL tells ctest to never run these in parallel
+        # with each other or any other test.
+        set_tests_properties(
+            scan_safety_guard_test
+            PROPERTIES RUN_SERIAL TRUE
+        )
+        # Lane: launch tests are `full`.
+        set_property(TEST
+            scan_safety_guard_test
+            APPEND PROPERTY LABELS full)
+    endif()
 endif()
 
 # ament_package() must be the last CMake call. Guard ensures it is a no-op in plain-CMake builds.
