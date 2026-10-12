@@ -139,6 +139,18 @@ add_planner_test(scenario_loader_test unit/core/scenario/scenario_loader_test.cp
 target_include_directories(scenario_loader_test PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(scenario_loader_test PRIVATE ${OpenCV_LIBS})
 
+# ROS lifecycle idempotency regression: exercises PlannerNode/ROSMapProvider on_configure/
+# on_cleanup directly (configure -> cleanup -> configure), so it only builds when the optional
+# ROS layer (planner_ros) is present. Needs its own main() to bracket node construction with
+# rclcpp::init/shutdown, so it links GTest::gtest rather than the gtest_main convenience target
+# the other tests above use.
+if(TARGET planner_ros)
+    add_executable(planner_lifecycle_test unit/ros/planner_lifecycle_test.cpp)
+    target_link_libraries(planner_lifecycle_test PRIVATE planner_ros GTest::gtest)
+    add_test(NAME planner_lifecycle_test COMMAND planner_lifecycle_test)
+    set_property(TEST planner_lifecycle_test APPEND PROPERTY LABELS fast unit)
+endif()
+
 # Data-driven whole-planner integration tier (scenario corpus). Owns its own macro + runner; see
 # integration/CMakeLists.txt. Kept in a subdirectory so its `integration`-labeled ctest cases stay
 # selectable apart from the unit suite above.

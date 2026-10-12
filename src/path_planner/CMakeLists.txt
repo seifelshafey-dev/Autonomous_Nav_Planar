@@ -107,6 +107,8 @@ if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
 
     add_library(planner_ros
         src/ros/map_provider/map_provider_server.cpp
+        src/ros/planner_server/planner_node.cpp
+        src/ros/planner_server/plan_conversions.cpp
     )
     target_include_directories(planner_ros
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
