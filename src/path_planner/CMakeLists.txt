@@ -42,6 +42,7 @@ add_library(path_planner
     src/core/motion/world_robot_geometry.cpp
     src/core/motion/kinematic_model.cpp
     src/core/collision_checker/collision_checker.cpp
+    src/core/navigation/navigation_mode.cpp
     src/core/planner/cost/costmap.cpp
     src/core/planner/primitives/build_diff_prim_lib.cpp
     src/core/planner/hybrid_astar/search.cpp

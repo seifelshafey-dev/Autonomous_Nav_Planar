@@ -68,6 +68,10 @@ add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp
 add_planner_test(collision_checker_test unit/core/collision_checker/collision_checker_test.cpp)
 add_planner_property_test(collision_checker_property_test unit/core/collision_checker/collision_checker_property_test.cpp)
 
+add_planner_test(navigation_mode_test unit/core/navigation/navigation_mode_test.cpp)
+add_planner_test(forward_clock_test unit/core/navigation/forward_clock_test.cpp)
+add_planner_test(navigation_checks_test unit/core/navigation/navigation_checks_test.cpp)
+
 add_planner_test(costmap_test unit/core/planner/cost/costmap_test.cpp)
 
 add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
@@ -95,6 +99,7 @@ add_planner_property_test(props_core
     unit/core/types/math/wrap_angle_property_test.cpp
     unit/core/map/grid_transform_property_test.cpp
     unit/core/map/edt_property_test.cpp
+    unit/core/navigation/forward_clock_property_test.cpp
     unit/core/map/rasterize_property_test.cpp
     unit/core/motion/world_robot_geometry_property_test.cpp
     unit/core/motion/distance_functions_property_test.cpp
