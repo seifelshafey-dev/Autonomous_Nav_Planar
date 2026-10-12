@@ -83,6 +83,52 @@ if(CURL_FOUND)
     target_link_libraries(path_planner PUBLIC CURL::libcurl)
 endif()
 
+# Optional ROS2 layer: only built when rclcpp_lifecycle is available, so the core library stays
+# buildable in pure C++ environments (CI, unit tests, embedded toolchains).
+find_package(rclcpp QUIET)
+find_package(rclcpp_lifecycle QUIET)
+find_package(nav_msgs QUIET)
+
+if(rclcpp_FOUND AND rclcpp_lifecycle_FOUND AND nav_msgs_FOUND)
+    find_package(rclcpp_action REQUIRED)
+    find_package(tf2_ros REQUIRED)
+    find_package(tf2 REQUIRED)
+    find_package(tf2_geometry_msgs REQUIRED)
+    find_package(geometry_msgs REQUIRED)
+    find_package(path_planner_msgs REQUIRED)
+    find_package(visualization_msgs REQUIRED)
+    find_package(std_msgs REQUIRED)
+    find_package(bondcpp REQUIRED)
+
+    # Fail at configure time instead of deep in the build: the ROS layer uses std::atomic<std::shared_ptr>.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12)
+        message(FATAL_ERROR "The planner ROS layer needs GCC 12 or newer (std::atomic<std::shared_ptr>); found ${CMAKE_CXX_COMPILER_VERSION}. Configure with -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12.")
+    endif()
+
+    add_library(planner_ros
+        src/ros/map_provider/map_provider_server.cpp
+    )
+    target_include_directories(planner_ros
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    target_link_libraries(planner_ros
+        PUBLIC
+            path_planner
+            rclcpp::rclcpp
+            rclcpp_lifecycle::rclcpp_lifecycle
+            ${nav_msgs_TARGETS}
+            rclcpp_action::rclcpp_action
+            tf2_ros::tf2_ros
+            ${tf2_TARGETS}
+            ${tf2_geometry_msgs_TARGETS}
+            ${geometry_msgs_TARGETS}
+            ${path_planner_msgs_TARGETS}
+            ${visualization_msgs_TARGETS}
+            ${std_msgs_TARGETS}
+            bondcpp::bondcpp
+    )
+endif()
+
 option(BUILD_TOOLS "Build non-ROS visualization/debug tools" OFF)
 
 if(BUILD_TOOLS)
