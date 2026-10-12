@@ -56,10 +56,20 @@ add_planner_test(map_signature_test unit/core/map/map_signature_test.cpp)
 
 add_planner_test(rasterize_test unit/core/map/rasterize_test.cpp)
 
+add_planner_test(world_robot_geometry_test unit/core/motion/world_robot_geometry_test.cpp)
+
+add_planner_test(distance_functions_test unit/core/motion/distance_functions_test.cpp)
+
+add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp)
+
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core
     unit/core/types/math/wrap_angle_property_test.cpp
     unit/core/map/grid_transform_property_test.cpp
     unit/core/map/edt_property_test.cpp
     unit/core/map/rasterize_property_test.cpp
+    unit/core/motion/world_robot_geometry_property_test.cpp
+    unit/core/motion/distance_functions_property_test.cpp
+    unit/core/motion/motion_context_property_test.cpp
+    unit/core/motion/kinematics/diff_drive_property_test.cpp
 )

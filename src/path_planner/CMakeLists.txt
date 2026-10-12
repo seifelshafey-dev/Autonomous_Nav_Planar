@@ -37,6 +37,8 @@ add_library(path_planner
     src/core/map/rasterize.cpp
     src/core/map/edt.cpp
     src/core/map/map_signature.cpp
+    src/core/motion/motion_context.cpp
+    src/core/motion/world_robot_geometry.cpp
 )
 
 # Core is scenario-agnostic: it carries no corpus path. The scenario test corpus lives with the
