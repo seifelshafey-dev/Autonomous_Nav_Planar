@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>robot_bringup</name>
+  <version>0.1.0</version>
+  <description>Reference differential-drive robot, Gazebo worlds and bring-up launches for trying the planner in simulation. Optional: the planner does not depend on this package.</description>
+  <maintainer email="seifelshafey@gmail.com">Seif ElShafey</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>ros2_controllers</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
+  <exec_depend>controller_manager_msgs</exec_depend>
+
+  <!-- Gazebo Fortress sim bring-up (optional; robot_bringup-only, not a
+       planner dep). ros_gz_sim/ros_gz_bridge spawn the robot + bridge /scan +
+       /clock; ign_ros2_control hosts the controller_manager inside the sim;
+       slam_toolbox consumes the bridged /scan. -->
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ign_ros2_control</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+
+  <!-- Single-instance robot_localization EKF (world_frame: map) fusing /odom + slam_toolbox's /pose,
+       owning map->odom. Reference integration only; launched by sim_system.launch.py, not linked
+       against (exec_depend, same relation as slam_toolbox). See config/ekf.yaml. -->
+  <exec_depend>robot_localization</exec_depend>
+
+  <!-- System launch tests (controller_tracking_test, planning_control_pipeline_test) run the planner
+       stack and controller against the mock robot. -->
+  <test_depend>planner</test_depend>
+  <test_depend>path_planner_msgs</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>launch_testing_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

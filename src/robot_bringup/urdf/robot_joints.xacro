@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+  Joint tree for the reference diff-drive base, re-centered on the driven-wheel
+  axle midpoint (base_link = diff-drive rotation center).
+
+  Convention: +x forward, +y left, +z up.
+  Driven wheels are REAR (on the axle through the origin, symmetric in y at
+  +/-wheel_separation/2 = +/-0.275); the castor is FRONT (+x). Ground plane is
+  z = -0.15 (wheel centers at z = -0.075 minus wheel_radius; castor sphere
+  r=0.025 at z = -0.125).
+
+  Wheel-joint velocity limit is 44.0 rad/s (= vmax/wheel_radius headroom).
+  Not enforced by mock hardware, but correct for the Gazebo simulation and for
+  model fidelity.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="left_wheel_link"/>
+        <origin xyz="0 0.275 -0.075" rpy="1.5707963 0 0"/>
+        <axis xyz="0 0 -1"/>
+        <limit effort="10" velocity="44.0"/>
+    </joint>
+
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="right_wheel_link"/>
+        <origin xyz="0 -0.275 -0.075" rpy="1.5707963 0 0"/>
+        <axis xyz="0 0 -1"/>
+        <limit effort="10" velocity="44.0"/>
+    </joint>
+
+    <joint name="castor_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="castor_wheel_link"/>
+        <origin xyz="0.25 0 -0.125" rpy="0 0 0"/>
+    </joint>
+
+</robot>

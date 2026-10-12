@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<!--
+  Dimensions and inertia macros for the reference diff-drive base.
+
+  The chassis footprint fits inside the planner's +/-0.3 m body-local square
+  (config/robot/robot_params.yaml is the source of truth; this URDF is
+  reconciled to it, never the reverse).
+
+  wheel_separation MUST equal the driven-wheel joint y-offsets (+/-0.275 in
+  robot_joints.xacro) AND the diff_drive_controller wheel_separation
+  (config/controllers.yaml). Keep all three in lockstep.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="reference_robot">
+
+    <xacro:property name="wheel_radius"     value="0.075" />
+    <xacro:property name="wheel_length"     value="0.025" />
+    <xacro:property name="wheel_separation" value="0.55" />
+
+    <xacro:property name="chassis_length" value="0.5" />
+    <xacro:property name="chassis_width"  value="0.5" />
+    <xacro:property name="chassis_height" value="0.10" />
+
+    <xacro:property name="chassis_mass" value="2.0" />
+    <xacro:property name="wheel_mass"   value="0.5" />
+
+    <xacro:property name="M_PI" value="3.14159265359"/>
+    <xacro:property name="DEG_TO_RAD" value="${M_PI / 180.0}"/>
+
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+
+    <material name="grey">
+        <color rgba="0.5 0.5 0.5 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <xacro:macro name="box_inertia" params="m l w h">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${m}"/>
+            <inertia ixx="${(m/12) * (h*h + w*w)}" ixy="0.0" ixz="0.0"
+                     iyy="${(m/12) * (h*h + l*l)}" iyz="0.0"
+                     izz="${(m/12) * (l*l + w*w)}"/>
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="cylinder_inertia" params="m r h">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${m}"/>
+            <inertia ixx="${(m/12) * (3*r*r + h*h)}" ixy="0" ixz="0"
+                     iyy="${(m/12) * (3*r*r + h*h)}" iyz="0"
+                     izz="${(m/2) * (r*r)}"/>
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="sphere_inertia" params="m r">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="${m}"/>
+            <inertia ixx="${(2.0/5.0) * m * (r*r)}" ixy="0.0" ixz="0.0"
+                     iyy="${(2.0/5.0) * m * (r*r)}" iyz="0.0"
+                     izz="${(2.0/5.0) * m * (r*r)}"/>
+        </inertial>
+    </xacro:macro>
+
+</robot>

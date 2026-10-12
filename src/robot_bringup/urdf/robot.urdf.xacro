@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+  Top-level xacro for the reference diff-drive base (robot_bringup).
+
+  xacro arg:
+    use_mock_hardware (default true) selects the ros2_control hardware plugin.
+      true  => mock_components/GenericSystem    (no simulator)
+      false => ign_ros2_control/IgnitionSystem  (Gazebo Fortress)
+    See ros2_control.xacro.
+
+  Expand for the mock path:
+    xacro robot.urdf.xacro use_mock_hardware:=true
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="reference_robot">
+
+    <xacro:arg name="use_mock_hardware" default="true"/>
+    <xacro:property name="use_mock_hardware" value="$(arg use_mock_hardware)"/>
+
+    <xacro:include filename="$(find robot_bringup)/urdf/robot_properties.xacro"/>
+    <xacro:include filename="$(find robot_bringup)/urdf/robot_links.xacro"/>
+    <xacro:include filename="$(find robot_bringup)/urdf/robot_joints.xacro"/>
+    <xacro:include filename="$(find robot_bringup)/urdf/ros2_control.xacro"/>
+    <xacro:include filename="$(find robot_bringup)/urdf/lidar.xacro"/>
+
+</robot>
