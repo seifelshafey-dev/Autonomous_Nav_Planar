@@ -68,6 +68,13 @@ add_planner_test(diff_drive_test unit/core/motion/kinematics/diff_drive_test.cpp
 add_planner_test(collision_checker_test unit/core/collision_checker/collision_checker_test.cpp)
 add_planner_property_test(collision_checker_property_test unit/core/collision_checker/collision_checker_property_test.cpp)
 
+# Pure-pursuit follower: example tests pin the sign/magnitude conventions.
+add_planner_test(pure_pursuit_test unit/core/control/pure_pursuit_test.cpp)
+
+# Stop-zone test of the scan guard: example table plus brute-force cover/bound/monotone properties.
+add_planner_test(stop_zone_test unit/core/control/stop_zone_test.cpp)
+add_planner_property_test(stop_zone_property_test unit/core/control/stop_zone_property_test.cpp)
+
 add_planner_test(navigation_mode_test unit/core/navigation/navigation_mode_test.cpp)
 add_planner_test(forward_clock_test unit/core/navigation/forward_clock_test.cpp)
 add_planner_test(navigation_checks_test unit/core/navigation/navigation_checks_test.cpp)
@@ -113,7 +120,11 @@ add_planner_property_test(exact_cover_property_test unit/core/planner/primitives
 
 # Fixed-seed loop of 300 returned paths; every returned path must pass the plain path monitor.
 add_planner_test(path_monitor_agreement_test unit/core/planner/validation/path_monitor_agreement_test.cpp)
+
+# pure_pursuit_property_test iterates step -> DiffDriveStateSpace::propagate to require closed-loop
+# convergence in both forward and reverse.
 add_planner_property_test(props_planner
+    unit/core/control/pure_pursuit_property_test.cpp
     unit/core/planner/cost/costmap_property_test.cpp
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
     unit/core/planner/hybrid_astar/closed_set_property_test.cpp

@@ -42,6 +42,8 @@ add_library(path_planner
     src/core/motion/world_robot_geometry.cpp
     src/core/motion/kinematic_model.cpp
     src/core/collision_checker/collision_checker.cpp
+    src/core/control/pure_pursuit.cpp
+    src/core/control/stop_zone.cpp
     src/core/navigation/navigation_mode.cpp
     src/core/planner/cost/costmap.cpp
     src/core/planner/primitives/build_diff_prim_lib.cpp
