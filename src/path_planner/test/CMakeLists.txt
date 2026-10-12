@@ -106,3 +106,10 @@ add_planner_property_test(props_planner
     unit/core/planner/hybrid_astar/closed_set_property_test.cpp
     unit/core/planner/hybrid_astar/obstacle_heuristic_property_test.cpp
 )
+
+# Scenario image-occupancy decode. The test generates its grayscale PNG fixture at run time with
+# cv::imwrite, so it needs OpenCV directly: path_planner links OpenCV PRIVATE, so the include dirs +
+# libs are NOT inherited by consumers and must be attached to this test target explicitly.
+add_planner_test(scenario_loader_test unit/core/scenario/scenario_loader_test.cpp)
+target_include_directories(scenario_loader_test PRIVATE ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(scenario_loader_test PRIVATE ${OpenCV_LIBS})

@@ -45,8 +45,11 @@ add_library(path_planner
     src/core/planner/cost/costmap.cpp
     src/core/planner/primitives/build_diff_prim_lib.cpp
     src/core/planner/hybrid_astar/search.cpp
+    src/core/planner/hybrid_astar/build_hybrid_astar.cpp
     src/core/planner/hybrid_astar/obstacle_heuristic.cpp
     src/core/planner/escape/escape_search.cpp
+    src/core/scenario/scenario_loader.cpp
+    src/core/scenario/scenario_planner.cpp
 )
 
 # Core is scenario-agnostic: it carries no corpus path. The scenario test corpus lives with the
