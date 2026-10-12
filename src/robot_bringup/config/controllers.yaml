@@ -1,0 +1,72 @@
+# controller_manager params for the reference diff-drive base (mock hardware).
+#
+# Brings up two controllers:
+#   joint_state_broadcaster  -> /joint_states
+#   diff_drive_controller    -> /odom + odom->base_link TF
+#
+# wheel_separation (0.55) and wheel_radius (0.075) MUST equal the URDF driven-
+# wheel geometry (robot_joints.xacro y-offsets +/-0.275, robot_properties.xacro
+# wheel_radius), or /odom integrates a base of the wrong size and the pose drifts.
+controller_manager:
+  ros__parameters:
+    update_rate: 30            # Hz -- controller_manager control loop
+    # NOTE: use_sim_time is intentionally NOT set here. This file is also loaded by the
+    # ign_ros2_control plugin inside the sim (urdf/ros2_control.xacro), where hardcoding
+    # `false` would be wrong/fragile; the clock source is chosen by the launch layer's central
+    # SetParameter('use_sim_time', ...) (mock -> wall clock, sim -> /clock).
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+diff_drive_controller:
+  ros__parameters:
+    left_wheel_names:  ['left_wheel_joint']
+    right_wheel_names: ['right_wheel_joint']
+
+    wheel_separation: 0.55     # m -- distance between driven wheels (URDF axle)
+    wheel_radius:     0.075    # m -- driven-wheel radius (URDF)
+
+    publish_rate: 30.0         # Hz -- /odom + odom->base_link publish rate
+    base_frame_id: base_link   # child frame of the broadcast odom TF
+    odom_frame_id: odom        # parent frame of the broadcast odom TF
+    enable_odom_tf: true       # this controller is the sole odom->base_link broadcaster
+
+    # /odom message covariance. Without these the controller stamps an ALL-ZERO covariance on /odom,
+    # which is DEGENERATE for the robot_localization EKF (ekf.yaml): a zero measurement covariance
+    # means "trust this measurement infinitely", collapsing the filter covariance toward singular and
+    # and making map->odom unstable. These are small positive values,
+    # not a tuned EKF R, sized from the drift measured against simulator ground truth (0.15 %/m translational, 0.18 deg/rev
+    # heading): the base is very accurate per-metre, so x/y and yaw get tight variances, while the
+    # unobservable planar DOFs (z, roll, pitch, and the sideways vy a diff-drive cannot produce) get
+    # a large 1e6 "effectively-unknown" variance. Order: [x, y, z, roll, pitch, yaw].
+    pose_covariance_diagonal:  [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.003]
+    twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.003]
+
+    # use_stamped_vel: false -> subscribe ~/cmd_vel_unstamped (plain geometry_msgs/Twist),
+    # i.e. /diff_drive_controller/cmd_vel_unstamped -- the pure-pursuit follower's /cmd_vel sink
+    # after its launch remap. Publisher and this flag must always agree.
+    use_stamped_vel: false
+
+    # Velocity + acceleration limits. These bound the wheel command STEP the controller_manager
+    # applies each tick at update_rate=30 Hz: dv = clamp(v - v_prev, a*dt), dt = 1/30 s. Without
+    # them a /cmd_vel jump lands as an INSTANT wheel-speed step -> wheel slip -> corrupted encoder
+    # odom -> SLAM map smear.
+    linear:
+      x:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        max_velocity: 0.6      # m/s   -- slightly above v_cruise 0.5 so pursuit's own cap governs
+        min_velocity: -0.6     # m/s   -- REV segments need this (a 0 floor blocks reverse)
+        max_acceleration: 1.0  # m/s^2 -- ramps 0->0.5 in ~0.5 s; kills the instant-step slip
+        min_acceleration: -1.5 # m/s^2 -- decel; 0.5->0 in ~0.33 s
+    angular:
+      z:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        max_velocity: 2.0      # rad/s
+        min_velocity: -2.0     # rad/s
+        max_acceleration: 2.5  # rad/s^2 -- 0->omega_pivot 1.0 in ~0.4 s; also damps goal-pivot chatter
+        min_acceleration: -2.5 # rad/s^2
