@@ -43,6 +43,7 @@ add_library(path_planner
     src/core/collision_checker/collision_checker.cpp
     src/core/planner/cost/costmap.cpp
     src/core/planner/primitives/build_diff_prim_lib.cpp
+    src/core/planner/hybrid_astar/search.cpp
     src/core/planner/hybrid_astar/obstacle_heuristic.cpp
 )
 

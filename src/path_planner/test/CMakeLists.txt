@@ -70,6 +70,10 @@ add_planner_property_test(collision_checker_property_test unit/core/collision_ch
 
 add_planner_test(build_diff_prim_lib_test unit/core/planner/primitives/build_diff_prim_lib_test.cpp)
 
+add_planner_test(closed_set_test unit/core/planner/hybrid_astar/closed_set_test.cpp)
+
+add_planner_test(open_set_test unit/core/planner/hybrid_astar/open_set_test.cpp)
+
 add_planner_test(heuristics_test unit/core/planner/hybrid_astar/heuristics_test.cpp)
 
 add_planner_test(obstacle_heuristic_test unit/core/planner/hybrid_astar/obstacle_heuristic_test.cpp)
@@ -92,5 +96,6 @@ add_planner_property_test(exact_cover_property_test unit/core/planner/primitives
 add_planner_property_test(props_planner
     unit/core/planner/cost/costmap_property_test.cpp
     unit/core/planner/primitives/build_diff_prim_lib_property_test.cpp
+    unit/core/planner/hybrid_astar/closed_set_property_test.cpp
     unit/core/planner/hybrid_astar/obstacle_heuristic_property_test.cpp
 )
