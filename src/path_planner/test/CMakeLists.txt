@@ -47,7 +47,19 @@ add_planner_test(grid_coords_test unit/core/types/grid_coords_test.cpp)
 
 add_planner_test(robot_params_test unit/core/robot/robot_params_test.cpp)
 
+add_planner_test(grid_test unit/core/map/grid_metadata_test.cpp unit/core/map/grid_occupancy_test.cpp)
+
+add_planner_test(edt_test unit/core/map/edt_test.cpp)
+
+add_planner_test(map_signature_test unit/core/map/map_signature_test.cpp)
+
+
+add_planner_test(rasterize_test unit/core/map/rasterize_test.cpp)
+
 # Property executables. Each is built from several test files (one source per original test).
 add_planner_property_test(props_core
     unit/core/types/math/wrap_angle_property_test.cpp
+    unit/core/map/grid_transform_property_test.cpp
+    unit/core/map/edt_property_test.cpp
+    unit/core/map/rasterize_property_test.cpp
 )

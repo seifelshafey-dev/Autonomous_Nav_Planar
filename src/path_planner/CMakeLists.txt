@@ -34,6 +34,9 @@ find_package(CURL QUIET)
 
 add_library(path_planner
     src/core/robot/robot_params.cpp
+    src/core/map/rasterize.cpp
+    src/core/map/edt.cpp
+    src/core/map/map_signature.cpp
 )
 
 # Core is scenario-agnostic: it carries no corpus path. The scenario test corpus lives with the
