@@ -1,0 +1,45 @@
+# Build artifacts
+build/
+build-*/
+# colcon workspace outputs
+install/
+log/
+*.o
+*.a
+*.so
+*.dylib
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+# ctest run artifacts (LastTest.log, Temporary/, etc.)
+Testing/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Tooling caches / generated docs
+.cache/
+__pycache__/
+*.pyc
+**/docs/html/
+**/docs/latex/
+
+# Generated visualization artifacts (search traces, PNG/GIF renders)
+src/path_planner/tools/viz/output/
+
+# scenario_studio bundles: scenarios/<name>/ holds a map binary + scenario YAML + generated output/.
+# Ignored wholesale for now (large map binaries + scratch outputs). The committed CI corpus lives at
+# test/integration/scenarios/ (a different path) and stays tracked.
+src/path_planner/scenarios/
+
+# Serialized SLAM pose graphs (regenerable, ~18 MB each)
+src/robot_bringup/maps/*.posegraph
+src/robot_bringup/maps/*.data
+
+# Generated per-scenario output (search traces, renders) in the tracked CI corpus
+src/path_planner/test/integration/scenarios/*/output/
