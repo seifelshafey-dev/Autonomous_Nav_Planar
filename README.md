@@ -103,6 +103,16 @@ This uses the workspace built in the quick start above. It starts Gazebo, SLAM, 
 
 The planner core lives in `src/path_planner/include/core`, the nodes in `src/path_planner/include/ros`, the messages in `src/path_planner_msgs`, and the example robot in `src/robot_bringup`.
 
+## Performance
+
+These numbers come from the warehouse map shown above: 1.7 M cells at 0.03 m resolution, with the shipped robot and planner settings. I ran a Release build on a laptop CPU (Intel Core i7-9750H). The heuristic field for a goal is built once and then reused, so the first plan to a goal costs more than the replans after it.
+
+- Typical queries plan in 1 to 12 ms once the field for the goal exists, which is the case for every replan to the same goal.
+- Building the field adds 75 to 105 ms. A 54 m plan across the whole map takes about 110 ms from cold.
+- Queries that start or end close to a wall take longer, up to about 180 ms.
+
+These are rough figures: two runs of the same query have differed by about a third. To time your own maps, build with `-DBUILD_TOOLS=ON` and run `plan_benchmark` on a scenario.
+
 ## Documentation
 
 - [Getting started](docs/guide/getting-started.md): from a clone to a first plan and a first change.
